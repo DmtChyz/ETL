@@ -12,23 +12,35 @@ public sealed class TripQueryService
     {
         using var conn = new SqlConnection(_connectionString);
         conn.Open();
-        using var cmd = new SqlCommand("SELECT TOP 1 PULocationId, AVG(TipAmount) as AvgTip FROM TripData WHERE PULocationId IS NOT NULL GROUP BY PULocationId ORDER BY AvgTip DESC", conn);
+        using var cmd = new SqlCommand("" +
+            "SELECT TOP 1 PULocationId, AVG(TipAmount) as AvgTip " +
+            "FROM TripData " +
+            "WHERE PULocationId IS NOT NULL " +
+            "GROUP BY PULocationId " +
+            "ORDER BY AvgTip DESC", conn);
         using var r = cmd.ExecuteReader();
-        if (!r.Read()) return null;
+        if (!r.Read()) return null; // read - read row only once.
         return new AverageTipResult
-        {
+        {   
             PULocationId = r.GetInt16(0),
             AverageTipAmount = r.GetDecimal(1)
         };
     }
 
-    public List<TripDataEntity> GetTop100LongestByTripDistance() => ReadTrips("SELECT TOP 100 * FROM TripData ORDER BY TripDistance DESC, Id DESC", null);
+    public List<TripDataEntity> GetTop100LongestByTripDistance() => ReadTrips("" +
+        "SELECT TOP 100 * " +
+        "FROM TripData " +
+        "ORDER BY TripDistance DESC, Id DESC", null);
 
-    public List<TripDataEntity> GetTop100LongestByTravelTime() => ReadTrips("SELECT TOP 100 * FROM TripData WHERE travel_time_seconds IS NOT NULL ORDER BY travel_time_seconds DESC, Id DESC", null);
+    public List<TripDataEntity> GetTop100LongestByTravelTime() => ReadTrips("" +
+        "SELECT TOP 100 * " +
+        "FROM TripData" +
+        " WHERE travel_time_seconds IS NOT NULL" +
+        " ORDER BY travel_time_seconds DESC, Id DESC", null);
 
     public List<TripDataEntity> Search(int locationId)
     {
-        var sql = "SELECT TOP 20 * FROM TripData WHERE PULocationId = @id";
+        var sql = "SELECT TOP 20 * FROM TripData WHERE PULocationId = @id"; // placeholder parameter
         var param = new SqlParameter("@id", locationId);
         return ReadTrips(sql, new List<SqlParameter> { param });
     }
@@ -38,13 +50,13 @@ public sealed class TripQueryService
         var results = new List<TripDataEntity>();
         using var conn = new SqlConnection(_connectionString);
         using var cmd = new SqlCommand(sql, conn);
-        if (parameters != null) cmd.Parameters.AddRange(parameters.ToArray());
+        if (parameters != null) cmd.Parameters.AddRange(parameters.ToArray()); // for placeholder parameters like in Search method on top
         conn.Open();
         using var r = cmd.ExecuteReader();
         while (r.Read())
         {
             results.Add(new TripDataEntity
-            {
+            {   // maping data with its type based on sql
                 Id = r.GetInt32(r.GetOrdinal("Id")),
                 PickupDatetime = ReadNullableDateTime(r, "PickupDatetime"),
                 DropoffDatetime = ReadNullableDateTime(r, "DropoffDatetime"),

@@ -30,6 +30,7 @@ namespace CrewRedETL.Services
 
             foreach (var row in data)
             {
+                // with converting into default value
                 dt.Rows.Add(
                     row.PickupDatetime,
                     row.DropoffDatetime, 
@@ -40,6 +41,17 @@ namespace CrewRedETL.Services
                     (short)(row.DOLocationId ?? 0),
                     row.FareAmount,
                     row.TipAmount);
+                // with nulls
+                //dt.Rows.Add(
+                //    row.PickupDatetime ?? (object)DBNull.Value,
+                //    row.DropoffDatetime ?? (object)DBNull.Value,
+                //    row.PassengerCount.HasValue ? (object)(byte)row.PassengerCount.Value : DBNull.Value,
+                //    row.TripDistance.HasValue ? (object)(decimal)row.TripDistance.Value : DBNull.Value,
+                //    row.StoreAndFwdFlag ?? (object)DBNull.Value,
+                //    row.PULocationId.HasValue ? (object)(short)row.PULocationId.Value : DBNull.Value,
+                //    row.DOLocationId.HasValue ? (object)(short)row.DOLocationId.Value : DBNull.Value,
+                //    row.FareAmount ?? (object)DBNull.Value,
+                //    row.TipAmount ?? (object)DBNull.Value);
             }
 
             using var bulk = new SqlBulkCopy(_connectionString);
